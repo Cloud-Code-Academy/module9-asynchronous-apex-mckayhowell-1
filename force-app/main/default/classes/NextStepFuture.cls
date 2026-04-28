@@ -21,33 +21,41 @@ public with sharing class NextStepFuture {
 
     /* 
      * Question 1
-     * Update/Uncomment the template code to create a method
      * Create a future method that updates all account and opportunities next step to 'Meeting in the future'
      * Account Next Step field is a custom field
      * Opportunity Next Step field is a standard field
      * Update the corresponding test class AsynchronousTest and test method nextStepFuture_testUpdateAllNextStep to cover test this method
      */
-    //[public | private ] [static] data_type method_name (input parameters) {
-    //  The body of the method
-    //}
+    @future
+    public static void updateAllNextStep(){
+        List<Account> accts = [SELECT Id, Next_Step__c FROM Account];
+        List<Opportunity> opps = [SELECT Id, NextStep FROM Opportunity];
+
+        for(Account acc : accts){
+            acc.Next_Step__c = 'Meeting in the future';
+        }
+        update accts;
+
+        for(Opportunity opp: opps){
+            opp.NextStep = 'Meeting in the future';
+        }
+        update opps;
+    }
 
     /*
     * Question 2
-    * Update/Uncomment the template code to create a method
     * Create a method that inserts a big deal opportunity and updates the user role name to 'CRO'
     * Update the corresponding test class AsynchronousTest and test method nextStepFuture_testCreateDealAndUpdateRole to cover test this method
     */
     //Mix DML Error happens when you try to perform DML operations on setup and non-setup objects in a single transaction.
     public static void createDealAndUpdateRole() {
-        Opportunity bigDeal = new Opportunity();
-        insertBigDeal(bigDeal);
-
-        UserRole[] roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
-        updateUserRoleName(roles);
+        insertBigDeal();
+        updateUserRoleName();
     }
 
     // Helper method to insert big deal
-    private static void insertBigDeal(Opportunity opp) {
+    private static void insertBigDeal() {
+        Opportunity opp = new Opportunity();
         opp.Amount = 1000000;
         opp.Name = 'Big Deal';
         opp.StageName = 'Closed Won'; 
@@ -58,7 +66,9 @@ public with sharing class NextStepFuture {
 
 
     // Helper method to update role name
-    private static void updateUserRoleName(UserRole[] roles){
+    @future
+    private static void updateUserRoleName(){
+        UserRole[] roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
         UserRole role;
         if (roles.isEmpty()) {
             role = new UserRole();
